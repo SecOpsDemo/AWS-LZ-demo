@@ -57,8 +57,6 @@ podTemplate(label: label, containers: [
     stage("Build") {
       container("builder") {
         try {
-          withCredentials([string(credentialsId: 'aws-lz-demo-secret-key-id', variable: 'ACCESS_KEY_ID'),
-          string(credentialsId: 'aws-lz-demo-access-key', variable: 'SECRET_ACCESS_KEY')]) {echo "The access_key is ${env.ACCESS_KEY_ID}"}
           sh "zip -r aws-landing-zone-configuration.zip ./aws-landing-zone-configuration/*"
           butler.success(SLACK_TOKEN_DEV, "Build")
         } catch (e) {
@@ -72,7 +70,9 @@ podTemplate(label: label, containers: [
       stage('Copy to S3 Bucket') {
         container("builder") {
           try {
-            envAWS("here");
+            withCredentials(
+                [string(credentialsId: 'aws-lz-demo-secret-key-id', variable: 'ACCESS_KEY_ID'), string(credentialsId: 'aws-lz-demo-access-key', variable: 'SECRET_ACCESS_KEY')]
+                ) {echo "The access_key is ${env.ACCESS_KEY_ID}"}
             sh "aws s3 cp aws-landing-zone-configuration.zip s3://${bucket}"
             butler.success(SLACK_TOKEN_DEV, "Push")
           } catch (e) {
