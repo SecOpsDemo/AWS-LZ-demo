@@ -57,7 +57,7 @@ podTemplate(label: label, containers: [
     stage("Build") {
       container("builder") {
         try {
-          sh "zip -r aws-landing-zone-configuration.zip ./aws-landing-zone-configuration/*"
+          sh "zip -r aws-landing-zone-configuration.zip ./*"
           butler.success(SLACK_TOKEN_DEV, "Build")
         } catch (e) {
           butler.failure(SLACK_TOKEN_DEV, "Build")
