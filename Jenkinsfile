@@ -66,8 +66,17 @@ podTemplate(label: label, containers: [
       }
     }
 
+    stage("Approval") {
+      container("builder") {
+        butler.proceed(SLACK_TOKEN_DQA, "Push to S3 Bucket", "prod")
+        timeout(time: 60, unit: "MINUTES") {
+          input(message: "${butler.name} ${butler.version} to prod")
+        }
+      }
+    }
+
     if (BRANCH_NAME == "master") {
-      stage('Copy to S3 Bucket') {
+      stage('Push to S3 Bucket') {
         container("builder") {
           try {
             withCredentials(
@@ -75,10 +84,8 @@ podTemplate(label: label, containers: [
                 string(credentialsId: 'aws-lz-demo-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')]
                 ) {
                 echo "The access_key is ${env.AWS_ACCESS_KEY_ID}"
-                sh "aws sts get-caller-identity"
                 sh "aws s3 cp aws-landing-zone-configuration.zip s3://${bucket}/ --sse=aws:kms"
             }
-
 
             butler.success(SLACK_TOKEN_DEV, "Push")
           } catch (e) {
