@@ -3,7 +3,7 @@ def SERVICE_NAME = "aws-landingzone"
 def IMAGE_NAME = "${SERVICE_NAME}"
 def REPOSITORY_URL = "https://github.com/SecOpsDemo/AWS-LZ-demo.git"
 def REPOSITORY_SECRET = ""
-def SLACK_TOKEN_DEV = ""
+def SLACK_TOKEN_DEV = "T01516JRLEB/B01D0F8FKPB/0uZFUNeLuz5LfOI94PgintD0"
 def SLACK_TOKEN_DQA = ""
 
 @Library("github.com/opsnow-tools/valve-butler")
