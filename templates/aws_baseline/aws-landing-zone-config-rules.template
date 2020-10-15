@@ -1,0 +1,649 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Enables an AWS Landing Zone account baseline AWS Config rules.
+
+Parameters:
+  EnableEncryptedVolumesRule:
+    Type: String
+    Description: "Enables the AWS managed encrypted-volumes config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  EnableRdsEncryptionRule:
+    Type: String
+    Description: "Enables the AWS managed rds-storage-encrypted config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  EnableS3PublicReadRule:
+    Type: String
+    Description: "Enables the AWS managed s3-bucket-public-read-prohibited config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  EnableS3PublicWriteRule:
+    Type: String
+    Description: "Enables the AWS managed s3-bucket-public-write-prohibited config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  EnableS3ServerSideEncryptionRule:
+    Type: String
+    Description: "Enables the AWS managed s3-bucket-server-side-encryption-enabled config rule. To enable, change the parameter value to true."
+    Default: false
+    AllowedValues:
+    - true
+    - false
+  EnableRestrictedCommonPortsRule:
+    Type: String
+    Description: "Enables the AWS managed restricted-common-ports config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  EnableRestrictedSshRule:
+    Type: String
+    Description: "Enables the AWS managed restricted-ssh config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+    - true
+    - false
+  KMSId:
+    Type: String
+    Description: "[Optional] Id or ARN of the KMS key that is used to encrypt the volume."
+    Default: ""
+  MaximumExecutionFrequency:
+    Type: String
+    Default: TwentyFour_Hours
+    Description: The frequency that you want AWS Config to run evaluations for the
+      rule.
+    MinLength: '1'
+    ConstraintDescription: This parameter is required.
+    AllowedValues:
+    - One_Hour
+    - Three_Hours
+    - Six_Hours
+    - Twelve_Hours
+    - TwentyFour_Hours
+  blockedPort1:
+    Type: String
+    Default: '20'
+    Description: Blocked TCP port number.
+  blockedPort2:
+    Type: String
+    Default: '21'
+    Description: Blocked TCP port number.
+  blockedPort3:
+    Type: String
+    Default: '3389'
+    Description: Blocked TCP port number.
+  blockedPort4:
+    Type: String
+    Default: '3306'
+    Description: Blocked TCP port number.
+  blockedPort5:
+    Type: String
+    Default: '4333'
+    Description: Blocked TCP port number.
+  ###############################################
+  #  Add Parameter for additional config rule - Start #
+  ###############################################
+  EnableRootAccessKeyCheckRule:
+    Type: String
+    Description: "Enables the AWS managed Root Access Key Check config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableIamUserMfaCheckRule:
+    Type: String
+    Description: "Enables the AWS managed IAM User MFA enable check config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableMfaConsoleLoginCheckRule:
+    Type: String
+    Description: "Enables the AWS managed MFA Console Login check config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableUnusedCredentialCheckRule:
+    Type: String
+    Description: "Enables the AWS managed unused credential check config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableAccesskeyRotateCheckRule:
+    Type: String
+    Description: "Enables the AWS managed accesskey rotation check config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableS3BucketLoggingCheckRule:
+    Type: String
+    Description: "Enables the AWS managed S3 bucket logging check onfig rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EC2StoppedInstanceRule:
+    Type: String
+    Description: "Enable EC2 Stopped Instance Rule? To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableS3BucketSslRequestsOnlyRule:
+    Type: String
+    Description: "Enables the AWS managed s3bucket ssl requests only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableDefaultSGClosedRule:
+    Type: String
+    Description: "Enables the AWS managed config rule - VPC Default security group closed rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  InternetGWAuthorizedVpcOnlyRules:
+    Type: String
+    Description: "Enables the AWS managed Internet Gateway authorized vpc only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableInstanceDetailMonitorRule:
+    Type: String
+    Description: "Enables the AWS managed Instance detailed monitoring only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableCFStackDriftDetectionRule:
+    Type: String
+    Description: "Enables the AWS managed cloudformation stack drift detection check only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableCFStackNotificationRule:
+    Type: String
+    Description: "Enables the AWS managed cloudformation stack notification check only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  EnableVpcSGOpenOnlytoAuthorizedPortsRule:
+    Type: String
+    Description: "Enables the AWS managed vpc security group open only to authorized ports only config rule. To disable, change the parameter value to false."
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  ###############################################
+  #  Add Parameter for additional config rule - End #
+  ###############################################
+Conditions:
+  EnableEncryptedVolumes: !Equals
+    - !Ref EnableEncryptedVolumesRule
+    - 'true'
+  EnableRdsEncryption: !Equals
+    - !Ref EnableRdsEncryptionRule
+    - 'true'
+  EnableS3PublicRead: !Equals
+    - !Ref EnableS3PublicReadRule
+    - 'true'
+  EnableS3PublicWrite: !Equals
+    - !Ref EnableS3PublicWriteRule
+    - 'true'
+  EnableS3ServerSideEncryption: !Equals
+    - !Ref EnableS3ServerSideEncryptionRule
+    - 'true'
+  EnableRestrictedCommonPortsPolicy: !Equals
+    - !Ref EnableRestrictedCommonPortsRule
+    - 'true'
+  EnableRestrictedSshPolicy: !Equals
+    - !Ref EnableRestrictedSshRule
+    - 'true'
+  HasKMSKeyId: !Not
+    - !Equals
+      - !Ref KMSId
+      - ""
+  blockedPort1:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: blockedPort1
+  blockedPort2:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: blockedPort2
+  blockedPort3:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: blockedPort3
+  blockedPort4:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: blockedPort4
+  blockedPort5:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: blockedPort5
+  ###### Add Start ##################
+  EnableRootAccessKeyCheck: !Equals
+    - !Ref EnableRootAccessKeyCheckRule
+    - 'true'
+  EnableIamUserMfaCheck: !Equals
+    - !Ref EnableIamUserMfaCheckRule
+    - 'true'
+  EnableMfaConsoleLoginCheck: !Equals
+    - !Ref EnableMfaConsoleLoginCheckRule
+    - 'true'
+  EnableUnusedCredentialCheck: !Equals
+    - !Ref EnableUnusedCredentialCheckRule
+    - 'true'
+  EnableAccesskeyRotateCheck: !Equals
+    - !Ref EnableAccesskeyRotateCheckRule
+    - 'true'
+  EnableS3BucketLoggingCheck: !Equals
+    - !Ref EnableS3BucketLoggingCheckRule
+    - 'true'
+  EC2StoppedInstance: !Equals
+    - !Ref EC2StoppedInstanceRule
+    - 'true'
+  EnableS3BucketSslRequestsOnlyCheck: !Equals
+    - !Ref EnableS3BucketSslRequestsOnlyRule
+    - 'true'
+  EnableDefaultSGClosedRuleCheck: !Equals
+    - !Ref EnableDefaultSGClosedRule
+    - 'true'
+  InternetGWAuthorizedVpcOnly: !Equals
+    - !Ref InternetGWAuthorizedVpcOnlyRules
+    - 'true'
+  EnableInstanceDetailMonitor: !Equals
+    - !Ref EnableInstanceDetailMonitorRule
+    - 'true'
+  EnableCFStackDriftDetection: !Equals
+    - !Ref EnableCFStackDriftDetectionRule
+    - 'true'
+  EnableCFStackNotification: !Equals
+    - !Ref EnableCFStackNotificationRule
+    - 'true'
+  EnableVpcSGOpenOnlytoAuthorizedPorts: !Equals
+    - !Ref EnableVpcSGOpenOnlytoAuthorizedPortsRule
+    - 'true'
+  ###### Add End ##################
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Config Rules
+      Parameters:
+      - EnableEncryptedVolumesRule
+      - EnableRdsEncryptionRule
+      - EnableS3PublicReadRule
+      - EnableS3PublicWriteRule
+      - EnableS3ServerSideEncryptionRule
+      - EnableRestrictedCommonPortsRule
+      - EnableRestrictedSshRule
+      # Add Parameter for additional config rule -start
+      - EnableRootAccessKeyCheckRule
+      - EnableIamUserMfaCheckRule
+      - EnableMfaConsoleLoginCheckRule
+      - EnableUnusedCredentialCheckRule
+      - EnableAccesskeyRotateCheckRule
+      - EnableS3BucketLoggingCheckRule
+      - EC2StoppedInstanceRule
+      - EnableS3BucketSslRequestsOnlyRule
+      - EnableDefaultSGClosedRule
+      - InternetGWAuthorizedVpcOnlyRules
+      - EnableInstanceDetailMonitorRule
+      - EnableCFStackDriftDetectionRule
+      - EnableCFStackNotificationRule
+      - EnableVpcSGOpenOnlytoAuthorizedPortsRule
+      # Add Parameter for additional config rule -end
+    - Label:
+        default: Misc Parameters
+      Parameters:
+      - KMSId
+      - MaximumExecutionFrequency
+    - Label:
+        default: Restricted Common Ports
+      Parameters:
+      - blockedPort1
+      - blockedPort2
+      - blockedPort3
+      - blockedPort4
+      - blockedPort5
+Resources:
+  CheckForEncryptedVolumes:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableEncryptedVolumes
+    Properties:
+      Description: Checks whether EBS volumes that are in an attached state are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Volume
+      InputParameters:
+        kmsId: !If
+          - HasKMSKeyId
+          - !Ref KMSId
+          - !Ref AWS::NoValue
+  CheckForRdsEncryption:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableRdsEncryption
+    Properties:
+      Description: Checks whether storage encryption is enabled for your RDS DB instances.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+      InputParameters:
+        kmsId: !If
+          - HasKMSKeyId
+          - !Ref KMSId
+          - !Ref AWS::NoValue
+  CheckForS3PublicRead:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableS3PublicRead
+    Properties:
+      Description: Checks that your S3 buckets do not allow public read access. If an S3 bucket policy or bucket ACL allows public read access, the bucket is noncompliant.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckForS3PublicWrite:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableS3PublicWrite
+    Properties:
+      Description: Checks that your S3 buckets do not allow public write access. If an S3 bucket policy or bucket ACL allows public write access, the bucket is noncompliant.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckForS3ServerSideEncryption:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableS3ServerSideEncryption
+    Properties:
+      Description: Checks for explicit denies on put-object requests without server side encryption.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckForRestrictedCommonPortsPolicy:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableRestrictedCommonPortsPolicy
+    Properties:
+      Description: Checks whether security groups that are in use disallow unrestricted
+        incoming TCP traffic to the specified ports.
+      InputParameters:
+        blockedPort1:
+          Fn::If:
+          - blockedPort1
+          - Ref: blockedPort1
+          - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+          - blockedPort2
+          - Ref: blockedPort2
+          - Ref: AWS::NoValue
+        blockedPort3:
+          Fn::If:
+          - blockedPort3
+          - Ref: blockedPort3
+          - Ref: AWS::NoValue
+        blockedPort4:
+          Fn::If:
+          - blockedPort4
+          - Ref: blockedPort4
+          - Ref: AWS::NoValue
+        blockedPort5:
+          Fn::If:
+          - blockedPort5
+          - Ref: blockedPort5
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+  CheckForRestrictedSshPolicy:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableRestrictedSshPolicy
+    Properties:
+      Description: Checks whether security groups that are in use disallow unrestricted
+        incoming SSH traffic.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+  ###############################################
+  #  Add Resources for additional config rule - Start - KOLON #
+  ###############################################
+  CheckRootAccessKey:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableRootAccessKeyCheck
+    Properties:
+      Description: Checks whether the root user access key is available.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::Accesskey
+  CheckIamUserMfaEnable:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableIamUserMfaCheck
+    Properties:
+      Description: Checks whether the AWS Identity and Access Management users have multi-factor authentication (MFA) enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::User
+  CheckMfaConsoleLogin:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableMfaConsoleLoginCheck
+    Properties:
+      Description: Checks whether AWS Multi-Factor Authentication (MFA) is enabled for all AWS Identity and Access Management (IAM) users that use a console password
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::User
+  CheckUnusedCredential:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableUnusedCredentialCheck
+    Properties:
+      Description: Checks whether your AWS Identity and Access Management (IAM) users have passwords or active access keys that have not been used within the specified number of days you provided.
+      InputParameters:
+        maxCredentialUsageAge: "90"
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::User
+  CheckAccesskeyRotate:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableAccesskeyRotateCheck
+    Properties:
+      Description: Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge.
+      InputParameters:
+        maxAccessKeyAge: "90"
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::Accesskey
+  EnableS3BucketLogging:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableS3BucketLoggingCheck
+    Properties:
+      Description: Checks whether logging is enabled for your S3 buckets.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+      Scope:
+         ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckEC2StoppedInstanceRule:
+    Type: AWS::Config::ConfigRule
+    Condition: EC2StoppedInstance
+    Properties:
+      Description: Checks whether there are instances stopped for more than the allowed number of days. The instance is NON_COMPLIANT if the state of the ec2 instance has been stopped for longer than the allowed number of days.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_STOPPED_INSTANCE
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+  CheckS3BucketSslRequestsOnly:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableS3BucketSslRequestsOnlyCheck
+    Properties:
+      Description: Checks whether S3 buckets have policies that require requests to use Secure Socket Layer (SSL).
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckDefaultSGClosed:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableDefaultSGClosedRuleCheck
+    Properties:
+      Description: Checks that the default security group of any Amazon Virtual Private Cloud‎ (VPC) does not allow inbound or outbound traffic. The rule is non-compliant if the default security group has one or more inbound or outbound traffic.
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+  CheckGWAuthorizedVpc:
+    Type: AWS::Config::ConfigRule
+    Condition: InternetGWAuthorizedVpcOnly
+    Properties:
+      Description: Checks that Internet gateways (IGWs) are only attached to an authorized Amazon Virtual Private Cloud (VPCs). The rule is NON_COMPLIANT if IGWs are not attached to an authorized VPC.
+      Source:
+        Owner: AWS
+        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::VPC
+  CheckInstanceDetailMonitor:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableInstanceDetailMonitor
+    Properties:
+      Description: Checks whether detailed monitoring is enabled for EC2 instances.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+  ######################################################################################################
+  # [2020-07-15] KSH: Role for CloudFormation-related Config Rules
+  ######################################################################################################
+  IamRoleForCFStackDriftDetection:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/ReadOnlyAccess'
+      Policies:
+        - PolicyName: AllowAccessToDriftDetection
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cloudformation:DetectStackResourceDrift'
+                  - 'cloudformation:DescribeStackDriftDetectionStatus'
+                  - 'cloudformation:DetectStackDrift'
+                Resource: '*'
+      RoleName: CfnDriftDetectionRole
+      Description: IAM role for CloudFormation Drift Detection
+  ######################################################################################################
+  # [2020-07-15] KSH: End of Role for CloudFormation-related Config Rules
+  ######################################################################################################
+  CheckCFStackDriftDetection:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableCFStackDriftDetection
+    Properties:
+      Description: Checks whether an AWS CloudFormation stack's actual configuration differs, or has drifted, from it's expected configuration.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFORMATION_STACK_DRIFT_DETECTION_CHECK
+      InputParameters:
+        cloudformationRoleArn:
+          'Fn::GetAtt':
+            - IamRoleForCFStackDriftDetection
+            - Arn
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::CloudFormation::Stack
+  CheckCFStackNotification:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableCFStackNotification
+    Properties:
+      Description: Checks whether your CloudFormation stacks are sending event notifications to an SNS topic. Optionally checks whether specified SNS topics are used.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFORMATION_STACK_NOTIFICATION_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::CloudFormation::Stack
+  CheckVpcSGOpenOnlytoAuthorizedPorts:
+    Type: AWS::Config::ConfigRule
+    Condition: EnableVpcSGOpenOnlytoAuthorizedPorts
+    Properties:
+      Description: Checks whether the security group with 0.0.0.0/0 of any Amazon Virtual Private Cloud (Amazon VPC) allows only specific inbound TCP or UDP traffic.
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+  ###############################################
+  #  Add Resources for additional config rule - End - KOLON #
+  ###############################################
