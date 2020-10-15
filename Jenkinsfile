@@ -71,11 +71,15 @@ podTemplate(label: label, containers: [
         container("builder") {
           try {
             withCredentials(
-                [string(credentialsId: 'aws-lz-demo-secret-key-id', variable: 'ACCESS_KEY_ID'), string(credentialsId: 'aws-lz-demo-secret-access-key', variable: 'SECRET_ACCESS_KEY')]
-                ) {echo "The access_key is ${env.ACCESS_KEY_ID}"}
+                [string(credentialsId: 'aws-lz-demo-secret-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+                string(credentialsId: 'aws-lz-demo-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')]
+                ) {
+                echo "The access_key is ${env.AWS_ACCESS_KEY_ID}"
+                sh "aws sts get-caller-identity"
+                sh "aws s3 cp aws-landing-zone-configuration.zip s3://${bucket}/ --sse=aws:kms"
+            }
 
-            sh "aws sts get-caller-identity"
-            sh "aws s3 cp aws-landing-zone-configuration.zip s3://${bucket}/ --sse=aws:kms"
+
             butler.success(SLACK_TOKEN_DEV, "Push")
           } catch (e) {
             butler.failure(SLACK_TOKEN_DEV, "Push")
