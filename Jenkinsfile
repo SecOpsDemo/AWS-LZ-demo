@@ -68,9 +68,9 @@ podTemplate(label: label, containers: [
 
     stage("Approval") {
       container("builder") {
-        butler.proceed(SLACK_TOKEN_DQA, "Push to S3 Bucket", "prod")
+        butler.proceed(SLACK_TOKEN_DQA, "Push to S3 Bucket", "")
         timeout(time: 60, unit: "MINUTES") {
-          input(message: "${butler.name} ${butler.version} to prod")
+          input(message: "Push file to S3 bucket")
         }
       }
     }
