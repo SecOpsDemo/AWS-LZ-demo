@@ -54,5 +54,61 @@
   {
     "ParameterKey": "blockedPort5",
     "ParameterValue": "4333"
+  },
+  {
+    "ParameterKey": "EnableRootAccessKeyCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableIamUserMfaCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableMfaConsoleLoginCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableUnusedCredentialCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableAccesskeyRotateCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableS3BucketLoggingCheckRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EC2StoppedInstanceRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableS3BucketSslRequestsOnlyRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableDefaultSGClosedRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "InternetGWAuthorizedVpcOnlyRules",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableInstanceDetailMonitorRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableCFStackDriftDetectionRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableCFStackNotificationRule",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EnableVpcSGOpenOnlytoAuthorizedPortsRule",
+    "ParameterValue": "true"
   }
 ]
